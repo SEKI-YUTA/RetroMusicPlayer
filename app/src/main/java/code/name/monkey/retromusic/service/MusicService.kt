@@ -368,8 +368,9 @@ class MusicService : MediaBrowserServiceCompat(),
     }
 
     fun addSong(song: Song) {
-        playingQueue.add(1, song)
-        originalPlayingQueue.add(1, song)
+        Log.d("MusicService", "addSong position: ${position}")
+        playingQueue.add(nextPosition, song)
+        originalPlayingQueue.add(nextPosition, song)
         notifyChange(QUEUE_CHANGED)
     }
 
