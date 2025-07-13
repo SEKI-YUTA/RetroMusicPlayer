@@ -370,8 +370,8 @@ class MusicService : MediaBrowserServiceCompat(),
     fun addSong(song: Song) {
         originalPlayingQueue.retainAll { it.id != song.id }
         playingQueue.retainAll { it.id != song.id }
-        playingQueue.add(nextPosition, song)
-        originalPlayingQueue.add(nextPosition, song)
+        playingQueue.add(song)
+        originalPlayingQueue.add(song)
         notifyChange(QUEUE_CHANGED)
     }
 

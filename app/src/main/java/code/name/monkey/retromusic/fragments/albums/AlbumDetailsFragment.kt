@@ -187,7 +187,7 @@ class AlbumDetailsFragment : AbsMainActivityFragment(R.layout.fragment_album_det
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val position = viewHolder.absoluteAdapterPosition
                     binding.fragmentAlbumContent.recyclerView.adapter?.notifyItemChanged(position)
-                    MusicPlayerRemote.enqueue(simpleSongAdapter.dataSet[position])
+                    MusicPlayerRemote.playNext(simpleSongAdapter.dataSet[position])
                 }
                 override fun onMove(
                     recyclerView: RecyclerView,
