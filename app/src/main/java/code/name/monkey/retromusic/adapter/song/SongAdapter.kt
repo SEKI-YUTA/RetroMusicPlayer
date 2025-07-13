@@ -16,19 +16,23 @@ package code.name.monkey.retromusic.adapter.song
 
 import android.content.res.ColorStateList
 import android.content.res.Resources
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.findNavController
 import code.name.monkey.retromusic.EXTRA_ALBUM_ID
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.adapter.base.AbsMultiSelectAdapter
 import code.name.monkey.retromusic.adapter.base.MediaEntryViewHolder
+import code.name.monkey.retromusic.extensions.uri
 import code.name.monkey.retromusic.glide.RetroGlideExtension
 import code.name.monkey.retromusic.glide.RetroGlideExtension.asBitmapPalette
 import code.name.monkey.retromusic.glide.RetroGlideExtension.songCoverOptions
@@ -38,6 +42,7 @@ import code.name.monkey.retromusic.helper.SortOrder
 import code.name.monkey.retromusic.helper.menu.SongMenuHelper
 import code.name.monkey.retromusic.helper.menu.SongsMenuHelper
 import code.name.monkey.retromusic.model.Song
+import code.name.monkey.retromusic.service.RetroExoPlayer
 import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.RetroUtil
@@ -181,6 +186,8 @@ open class SongAdapter(
         protected open var songMenuRes = SongMenuHelper.MENU_RES
         protected open val song: Song
             get() = dataSet[layoutPosition]
+        private var isLongPressing = false
+        private var previewPlayer: RetroExoPlayer? = null
 
         init {
             menu?.setOnClickListener(object : SongMenuHelper.OnClickSongMenu(activity) {
@@ -222,7 +229,29 @@ open class SongAdapter(
 
         override fun onLongClick(v: View?): Boolean {
             println("Long click")
-            return toggleChecked(layoutPosition)
+//            return toggleChecked(layoutPosition)
+            isLongPressing = true
+            MusicPlayerRemote.pauseSong()
+            previewPlayer = RetroExoPlayer(activity)
+            previewPlayer?.setDataSource(song, true, {})
+            previewPlayer?.start()
+            return true
+        }
+
+        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+            Log.d("SongAdapter", "onTouch")
+            if(isLongPressing.not() || event == null) return false
+            when(event.action) {
+                MotionEvent.ACTION_UP -> {
+                    isLongPressing = false
+                    Log.d("SongAdapter", "ACTION_UP")
+                    previewPlayer?.stop()
+                    previewPlayer = null
+                    MusicPlayerRemote.resumePlaying()
+                }
+                else -> {}
+            }
+            return super.onTouch(v, event)
         }
     }
 

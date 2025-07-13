@@ -15,6 +15,7 @@
 package code.name.monkey.retromusic.adapter.base;
 
 import android.graphics.Color;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -30,7 +31,7 @@ import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractDraggableSwipeabl
 import code.name.monkey.retromusic.R;
 
 public class MediaEntryViewHolder extends AbstractDraggableSwipeableItemViewHolder
-        implements View.OnLongClickListener, View.OnClickListener {
+        implements View.OnLongClickListener, View.OnClickListener, View.OnTouchListener {
 
     @Nullable
     public View dragView;
@@ -99,6 +100,7 @@ public class MediaEntryViewHolder extends AbstractDraggableSwipeableItemViewHold
         }
         itemView.setOnClickListener(this);
         itemView.setOnLongClickListener(this);
+        itemView.setOnTouchListener(this);
     }
 
     @Nullable
@@ -124,5 +126,10 @@ public class MediaEntryViewHolder extends AbstractDraggableSwipeableItemViewHold
     if (image != null) {
         image.setTransitionName(transitionName);
     }*/
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        return false;
     }
 }
