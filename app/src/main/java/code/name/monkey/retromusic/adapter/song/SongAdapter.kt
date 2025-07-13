@@ -187,6 +187,7 @@ open class SongAdapter(
         protected open val song: Song
             get() = dataSet[layoutPosition]
         private var isLongPressing = false
+        private var stashPlayingStatus = false
         private var previewPlayer: RetroExoPlayer? = null
 
         init {
@@ -231,6 +232,7 @@ open class SongAdapter(
             println("Long click")
 //            return toggleChecked(layoutPosition)
             isLongPressing = true
+            stashPlayingStatus = MusicPlayerRemote.isPlaying
             MusicPlayerRemote.pauseSong()
             previewPlayer = RetroExoPlayer(activity)
             previewPlayer?.setDataSource(song, true, {})
@@ -240,17 +242,25 @@ open class SongAdapter(
 
         override fun onTouch(v: View?, event: MotionEvent?): Boolean {
             Log.d("SongAdapter", "onTouch")
-            if(isLongPressing.not() || event == null) return false
-            when(event.action) {
-                MotionEvent.ACTION_UP -> {
+            if (isLongPressing.not() || event == null) return false
+            when (event.action) {
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_MOVE -> {
                     isLongPressing = false
                     Log.d("SongAdapter", "ACTION_UP")
                     previewPlayer?.stop()
                     previewPlayer = null
-                    MusicPlayerRemote.resumePlaying()
+                    if (stashPlayingStatus) {
+                        MusicPlayerRemote.resumePlaying()
+                    }
                 }
-                else -> {}
             }
+//            isLongPressing = false
+//            Log.d("SongAdapter", "ACTION_UP")
+//            previewPlayer?.stop()
+//            previewPlayer = null
+//            if(stashPlayingStatus) {
+//                MusicPlayerRemote.resumePlaying()
+//            }
             return super.onTouch(v, event)
         }
     }
