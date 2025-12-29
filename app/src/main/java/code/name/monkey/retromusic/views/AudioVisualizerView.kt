@@ -66,7 +66,7 @@ class AudioVisualizerView @JvmOverloads constructor(
 
     companion object {
         private const val TAG = "AudioVisualizerView"
-        private const val NUM_BARS = 32
+        private const val NUM_BARS = 20
         private const val SMOOTHING_FACTOR = 0.7f
         private const val FRAME_INTERVAL_MS = 16L // ~60 FPS
         private const val MIN_CAPTURE_RATE = 10000 // 10ms minimum
