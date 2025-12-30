@@ -13,6 +13,26 @@
 
     </androidx.viewpager.widget.ViewPager>
 
+    <!-- Gradient overlay for visualizer (top: transparent, bottom: semi-transparent black) -->
+    <View
+        android:id="@+id/visualizerGradientOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_visualizer_overlay"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <!-- Audio Visualizer Overlay -->
+    <code.name.monkey.retromusic.views.AudioVisualizerView
+        android:id="@+id/audioVisualizer"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="32dp"
+        android:alpha="0.8"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/cover_lyrics"
         android:name="code.name.monkey.retromusic.fragments.player.CoverLyricsFragment"
@@ -43,4 +63,15 @@
             app:lrcTimelineColor="@color/transparent"
             tools:visibility="visible" />
     </com.bosphere.fadingedgelayout.FadingEdgeLayout>
+
+    <!-- Visualizer toggle button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/visualizerToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/toggle_visualizer"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/ic_equalizer" />
 </FrameLayout>
