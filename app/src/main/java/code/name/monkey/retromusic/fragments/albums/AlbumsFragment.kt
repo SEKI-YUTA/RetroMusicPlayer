@@ -27,6 +27,7 @@ import code.name.monkey.retromusic.extensions.setUpMediaRouteButton
 import code.name.monkey.retromusic.fragments.GridStyle
 import code.name.monkey.retromusic.fragments.ReloadType
 import code.name.monkey.retromusic.fragments.base.AbsRecyclerViewCustomGridSizeFragment
+import code.name.monkey.retromusic.fragments.base.AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment
 import code.name.monkey.retromusic.helper.MusicPlayerRemote
 import code.name.monkey.retromusic.helper.SortOrder.AlbumSortOrder
 import code.name.monkey.retromusic.interfaces.IAlbumClickListener
@@ -34,7 +35,7 @@ import code.name.monkey.retromusic.service.MusicService
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.RetroUtil
 
-class AlbumsFragment : AbsRecyclerViewCustomGridSizeFragment<AlbumAdapter, GridLayoutManager>(),
+class AlbumsFragment : AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<AlbumAdapter, GridLayoutManager>(),
     IAlbumClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

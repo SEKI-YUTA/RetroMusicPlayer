@@ -43,7 +43,7 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder
 abstract class AbsRecyclerViewFragment<A : RecyclerView.Adapter<*>, LM : RecyclerView.LayoutManager> :
     AbsMainActivityFragment(R.layout.fragment_main_recycler), IScrollHelper {
 
-    private var _binding: FragmentMainRecyclerBinding? = null
+    protected var _binding: FragmentMainRecyclerBinding? = null
     private val binding get() = _binding!!
     protected var adapter: A? = null
     protected var layoutManager: LM? = null

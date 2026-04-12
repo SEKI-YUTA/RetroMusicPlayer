@@ -16,6 +16,7 @@ jaudiotagger = "2.3.15"
 yslibrary_keyboardvisibilityevent_version = "3.0.0-RC3"
 koinAndroid = "3.5.6"
 kotlinGradlePlugin = "2.1.21"
+kotlin = "2.1.21"
 
 kotlinxCoroutinesAndroid = "1.10.2"
 google_play_billing_version = "7.0.0"
@@ -46,6 +47,8 @@ slidableactivity = "2.1.0"
 [libraries]
 #dependencies
 #navigation
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation_version" }
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation_version" }
 androidx-navigation-runtime-ktx = { module = "androidx.navigation:navigation-runtime-ktx", version.ref = "navigation_version" }
@@ -130,3 +133,4 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinGra
 androidx-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation_version" }
 github-ben-manes = { id = "com.github.ben-manes.versions", version.ref = "ben_manes_versoin" }
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "devTools_ksp_version" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
