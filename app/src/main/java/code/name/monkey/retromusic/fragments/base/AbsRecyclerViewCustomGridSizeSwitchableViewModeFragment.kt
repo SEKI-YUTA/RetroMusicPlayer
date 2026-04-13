@@ -110,7 +110,6 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                             R.id.albumDetailsFragment,
                             bundleOf(EXTRA_ALBUM_ID to albumId),
                             null,
-                            extras
                         )
 
                     }
