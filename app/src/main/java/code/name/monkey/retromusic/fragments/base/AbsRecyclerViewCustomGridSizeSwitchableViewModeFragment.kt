@@ -22,15 +22,38 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
@@ -38,38 +61,139 @@ import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.util.RetroUtil
 import code.name.monkey.retromusic.util.logD
 import com.google.android.material.transition.MaterialFade
+import kotlin.math.absoluteValue
 
-abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment <A : RecyclerView.Adapter<*>, LM : RecyclerView.LayoutManager> :
-        AbsRecyclerViewCustomGridSizeFragment<A, LM>() {
-    private lateinit var oldAlbumView: ComposeView
+abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : RecyclerView.Adapter<*>, LM : RecyclerView.LayoutManager> :
+    AbsRecyclerViewCustomGridSizeFragment<A, LM>() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = super.onCreateView(inflater, container, savedInstanceState)
-        oldAlbumView = _binding?.oldAlbumView as ComposeView
-       _binding?.oldAlbumView?.apply {
-           setContent {
-               Box(modifier = Modifier.fillMaxWidth().height(200.dp).background(Color.Red )) {
-                   Text("Hello from Compose", fontSize = 30.sp)
-               }
-           }
-       }
-        return view
+        return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        _binding?.oldAlbumView?.apply {
+            setViewCompositionStrategy(
+                ViewCompositionStrategy.DisposeOnLifecycleDestroyed(
+                    viewLifecycleOwner.lifecycle
+                )
+            )
+            setContent {
+                Ios6LikeLazyRow()
+            }
+        }
     }
 
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateMenu(menu, inflater)
-        menu.findItem(R.id.action_toggle_album_view_mode).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        menu.findItem(R.id.action_toggle_album_view_mode)
+            .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
     }
 
     override fun onMenuItemSelected(item: MenuItem): Boolean {
-        if(item.itemId == R.id.action_toggle_album_view_mode) {
-            oldAlbumView.visibility = View.VISIBLE
+        if (item.itemId == R.id.action_toggle_album_view_mode) {
+            _binding?.recyclerView?.visibility = View.GONE
+            _binding?.oldAlbumView?.visibility = View.VISIBLE
             return true
         }
         return false
+    }
+}
+
+
+@Preview
+@Composable
+fun SamplePreview() {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(400.dp)
+        .background(Color.Red)) {
+        Text("Hello from Compose", fontSize = 30.sp)
+    }
+}
+
+@Composable
+fun Ios6LikeLazyRow(modifier: Modifier = Modifier) {
+    val listData = remember { List(10) { "Item No.$it" } }
+    val pagerState = rememberPagerState(pageCount = { listData.size })
+
+    // 1. 親の幅を取得するために BoxWithConstraints を使用
+    BoxWithConstraints(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        val screenWidth = maxWidth
+        val itemWidth = 220.dp
+
+        // 2. アイテムを中央に寄せるためのパディングを計算
+        // (画面幅 - アイテム幅) / 2 を左右に設定する
+        val horizontalPadding = (screenWidth - itemWidth) / 2
+
+        HorizontalPager(
+            state = pagerState,
+            pageSize = PageSize.Fixed(itemWidth),
+            contentPadding = PaddingValues(horizontal = horizontalPadding), // ここが肝！
+            beyondViewportPageCount = 2, // 左右のアイテムが消えないように多めに描画
+            modifier = Modifier.fillMaxWidth()
+        ) { page ->
+            AlbumJacket(
+                text = listData[page],
+                pageIndex = page,
+                pagerState = pagerState
+            )
+        }
+    }
+}
+
+@Composable
+fun AlbumJacket(
+    text: String,
+    pageIndex: Int,
+    pagerState: PagerState,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .size(200.dp) // Card自体のサイズ
+            .graphicsLayer {
+                // 現在位置とこのアイテムの距離（-1.0 〜 1.0 ...）
+                val pageOffset = (
+                        (pagerState.currentPage - pageIndex) + pagerState.currentPageOffsetFraction
+                        )
+
+                // 3. 回転の計算 (中心は0、左はプラス、右はマイナス)
+                // iOS6風にするなら、少し急激に回転させるために coerceIn を調整
+                val fraction = pageOffset.coerceIn(-1f, 1f)
+                rotationY = fraction * 45f // 45度くらいにするとそれっぽい
+
+                // 4. 透明度とスケールの調整（中央を強調）
+                alpha = lerp(
+                    start = 0.6f,
+                    stop = 1f,
+                    fraction = 1f - pageOffset.absoluteValue.coerceIn(0f, 1f)
+                )
+
+                val scale = lerp(
+                    start = 0.8f,
+                    stop = 1f,
+                    fraction = 1f - pageOffset.absoluteValue.coerceIn(0f, 1f)
+                )
+                scaleX = scale
+                scaleY = scale
+
+                // Z軸の奥行き感
+                cameraDistance = 12f * density
+            },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.LightGray)
+        ) {
+            Text(text, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
