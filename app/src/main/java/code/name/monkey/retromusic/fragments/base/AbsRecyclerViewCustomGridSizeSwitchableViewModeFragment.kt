@@ -69,7 +69,8 @@ import kotlin.math.absoluteValue
 abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : RecyclerView.Adapter<*>, LM : RecyclerView.LayoutManager> :
     AbsRecyclerViewCustomGridSizeFragment<A, LM>() {
     private var isOldAlbumView = false
-    private val IS_OLD_ALBUM_VIEW_KEY = "AbdRecyclerViewCustomGridSizeSwitchableViewModeFragment_isOldAlbumView"
+    private val IS_OLD_ALBUM_VIEW_KEY =
+        "AbdRecyclerViewCustomGridSizeSwitchableViewModeFragment_isOldAlbumView"
     private var oldAlbumView: View? = null
 
     override fun onCreateView(
@@ -94,16 +95,16 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
             setContent {
                 val jacketUriList = produceState(initialValue = emptyList<Pair<Uri, Long>>()) {
                     libraryViewModel.getAlbums().value?.let { albums ->
-                        val albumJacketUriList = albums.map{ album ->
+                        val albumJacketUriList = albums.map { album ->
                             MusicUtil.getMediaStoreAlbumCoverUri(album.id) to album.id
                         }
                         value = albumJacketUriList
                     }
                 }
                 Ios6LikeLazyRow(
-                dataSet = jacketUriList.value,
+                    dataSet = jacketUriList.value,
                     onClickAlbumCard = { albumId ->
-                        val extras = if(oldAlbumView != null) FragmentNavigatorExtras(
+                        val extras = if (oldAlbumView != null) FragmentNavigatorExtras(
                             oldAlbumView!! to albumId.toString()
                         ) else null
                         findNavController().navigate(
@@ -121,11 +122,11 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
     }
 
     private fun getRecyclerViewVisibility(): Int {
-       return if(isOldAlbumView) View.GONE else View.VISIBLE
+        return if (isOldAlbumView) View.GONE else View.VISIBLE
     }
 
     private fun getOldAlbumViewVisibility(): Int {
-        return if(isOldAlbumView) View.VISIBLE else View.GONE
+        return if (isOldAlbumView) View.VISIBLE else View.GONE
     }
 
     private fun updateViewVisibility() {
@@ -160,20 +161,24 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 @Preview
 @Composable
 fun SamplePreview() {
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(400.dp)
-        .background(Color.Red)) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)
+            .background(Color.Red)
+    ) {
         Text("Hello from Compose", fontSize = 30.sp)
     }
 }
 
 @Composable
 fun Ios6LikeLazyRow(
-    dataSet: List<Pair<Uri, Long>>, modifier: Modifier = Modifier, onClickAlbumCard: (albumId: Long) -> Unit
+    dataSet: List<Pair<Uri, Long>>,
+    modifier: Modifier = Modifier,
+    onClickAlbumCard: (albumId: Long) -> Unit
 ) {
     val listData = remember { List(10) { "Item No.$it" } }
-    val pagerState = rememberPagerState(pageCount = { dataSet.size  })
+    val pagerState = rememberPagerState(pageCount = { dataSet.size })
 
     // 1. 親の幅を取得するために BoxWithConstraints を使用
     BoxWithConstraints(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -191,17 +196,13 @@ fun Ios6LikeLazyRow(
             beyondViewportPageCount = 2, // 左右のアイテムが消えないように多めに描画
             modifier = Modifier.fillMaxWidth()
         ) { page ->
-            Card (
-                onClick = {
-                    onClickAlbumCard(dataSet[page].second)
-                }
-            ){
-                AlbumJacket(
-                    uriStr = dataSet[page].first.toString(),
-                    pageIndex = page,
-                    pagerState = pagerState
-                )
-            }
+            AlbumJacket(
+                uriStr = dataSet[page].first.toString(),
+                albumId = dataSet[page].second,
+                pageIndex = page,
+                pagerState = pagerState,
+                onClickAlbum = onClickAlbumCard
+            )
         }
     }
 }
@@ -210,8 +211,10 @@ fun Ios6LikeLazyRow(
 @Composable
 fun AlbumJacket(
     uriStr: String,
+    albumId: Long,
     pageIndex: Int,
     pagerState: PagerState,
+    onClickAlbum: (albumId: Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -248,11 +251,12 @@ fun AlbumJacket(
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.LightGray)
+                .fillMaxSize(),
+            onClick = {
+                onClickAlbum(albumId)
+            }
         ) {
             GlideImage(
                 model = uriStr.toUri(),
