@@ -22,15 +22,12 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
@@ -38,44 +35,40 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionManager
 import code.name.monkey.retromusic.R
-import code.name.monkey.retromusic.util.RetroUtil
-import code.name.monkey.retromusic.util.logD
-import com.google.android.material.transition.MaterialFade
 import kotlin.math.absoluteValue
 
 abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : RecyclerView.Adapter<*>, LM : RecyclerView.LayoutManager> :
     AbsRecyclerViewCustomGridSizeFragment<A, LM>() {
+    private var isOldAlbumView = false
+    private val IS_OLD_ALBUM_VIEW_KEY = "AbdRecyclerViewCustomGridSizeSwitchableViewModeFragment_isOldAlbumView"
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        isOldAlbumView = savedInstanceState?.getBoolean(IS_OLD_ALBUM_VIEW_KEY) ?: false
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        updateViewVisibility()
         _binding?.oldAlbumView?.apply {
             setViewCompositionStrategy(
                 ViewCompositionStrategy.DisposeOnLifecycleDestroyed(
@@ -88,6 +81,26 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
         }
     }
 
+    private fun getRecyclerViewVisibility(): Int {
+       return if(isOldAlbumView) View.GONE else View.VISIBLE
+    }
+
+    private fun getOldAlbumViewVisibility(): Int {
+        return if(isOldAlbumView) View.VISIBLE else View.GONE
+    }
+
+    private fun updateViewVisibility() {
+        _binding?.recyclerView?.visibility = getRecyclerViewVisibility()
+        _binding?.oldAlbumView?.visibility = getOldAlbumViewVisibility()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.apply {
+            putBoolean(IS_OLD_ALBUM_VIEW_KEY, isOldAlbumView)
+        }
+    }
+
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateMenu(menu, inflater)
         menu.findItem(R.id.action_toggle_album_view_mode)
@@ -96,8 +109,8 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 
     override fun onMenuItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_toggle_album_view_mode) {
-            _binding?.recyclerView?.visibility = View.GONE
-            _binding?.oldAlbumView?.visibility = View.VISIBLE
+            isOldAlbumView = true
+            updateViewVisibility()
             return true
         }
         return false
