@@ -26,6 +26,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -123,21 +124,24 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                             value = albumJacketUriList
                         }
                     }
-                Ios6LikeLazyRow(
-                    dataSet = jacketUriList.value,
-                    onClickAlbumCard = { albumId ->
-                        val extras = if (oldAlbumView != null) FragmentNavigatorExtras(
-                            oldAlbumView!! to albumId.toString()
-                        ) else null
-                        findNavController().navigate(
-                            R.id.albumDetailsFragment,
-                            bundleOf(EXTRA_ALBUM_ID to albumId),
-                            null,
-                        )
+                Column {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Ios6LikeLazyRow(
+                        dataSet = jacketUriList.value,
+                        onClickAlbumCard = { albumId ->
+                            val extras = if (oldAlbumView != null) FragmentNavigatorExtras(
+                                oldAlbumView!! to albumId.toString()
+                            ) else null
+                            findNavController().navigate(
+                                R.id.albumDetailsFragment,
+                                bundleOf(EXTRA_ALBUM_ID to albumId),
+                                null,
+                            )
 
-                    }
+                        }
 
-                )
+                    )
+                }
 
             }
         }
@@ -189,7 +193,7 @@ fun Ios6LikeLazyRow(
     val pagerState = rememberPagerState(pageCount = { dataSet.size })
 
     // 1. 親の幅を取得するために BoxWithConstraints を使用
-    BoxWithConstraints(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val screenWidth = maxWidth
         val itemWidth = 220.dp
 
