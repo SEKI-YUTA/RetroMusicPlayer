@@ -24,29 +24,42 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +74,7 @@ import androidx.recyclerview.widget.RecyclerView
 import code.name.monkey.retromusic.EXTRA_ALBUM_ID
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.extensions.findNavController
+import code.name.monkey.retromusic.model.AlbumHorizontalPagerModel
 import code.name.monkey.retromusic.util.MusicUtil
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -93,14 +107,22 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                 )
             )
             setContent {
-                val jacketUriList = produceState(initialValue = emptyList<Pair<Uri, Long>>()) {
-                    libraryViewModel.getAlbums().value?.let { albums ->
-                        val albumJacketUriList = albums.map { album ->
-                            MusicUtil.getMediaStoreAlbumCoverUri(album.id) to album.id
+                val jacketUriList =
+                    produceState(initialValue = emptyList<AlbumHorizontalPagerModel>()) {
+                        libraryViewModel.getAlbums().value?.let { albums ->
+                            val albumJacketUriList = albums.map { album ->
+                                AlbumHorizontalPagerModel(
+                                    albumId = album.id,
+                                    albumName = album.title,
+                                    albumArtist = album.albumArtist,
+                                    jacketImageUri = MusicUtil.getMediaStoreAlbumCoverUri(
+                                        album.id
+                                    )
+                                )
+                            }
+                            value = albumJacketUriList
                         }
-                        value = albumJacketUriList
                     }
-                }
                 Ios6LikeLazyRow(
                     dataSet = jacketUriList.value,
                     onClickAlbumCard = { albumId ->
@@ -173,7 +195,7 @@ fun SamplePreview() {
 
 @Composable
 fun Ios6LikeLazyRow(
-    dataSet: List<Pair<Uri, Long>>,
+    dataSet: List<AlbumHorizontalPagerModel>,
     modifier: Modifier = Modifier,
     onClickAlbumCard: (albumId: Long) -> Unit
 ) {
@@ -197,8 +219,7 @@ fun Ios6LikeLazyRow(
             modifier = Modifier.fillMaxWidth()
         ) { page ->
             AlbumJacket(
-                uriStr = dataSet[page].first.toString(),
-                albumId = dataSet[page].second,
+                albumData = dataSet[page],
                 pageIndex = page,
                 pagerState = pagerState,
                 onClickAlbum = onClickAlbumCard
@@ -210,16 +231,17 @@ fun Ios6LikeLazyRow(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun AlbumJacket(
-    uriStr: String,
-    albumId: Long,
+    albumData: AlbumHorizontalPagerModel,
     pageIndex: Int,
     pagerState: PagerState,
     onClickAlbum: (albumId: Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    val localInspection = LocalInspectionMode.current
+    Column(
         modifier = modifier
-            .size(200.dp) // Card自体のサイズ
+            .width(200.dp)
+            .height(260.dp)
             .graphicsLayer {
                 // 現在位置とこのアイテムの距離（-1.0 〜 1.0 ...）
                 val pageOffset = (
@@ -249,20 +271,72 @@ fun AlbumJacket(
                 // Z軸の奥行き感
                 cameraDistance = 12f * density
             },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Card(
-            modifier = Modifier
-                .fillMaxSize(),
-            onClick = {
-                onClickAlbum(albumId)
+        Column {
+            Card(
+                modifier = Modifier
+                    .size(200.dp),
+                onClick = {
+                    onClickAlbum(albumData.albumId)
+                }
+            ) {
+                if (localInspection) {
+                    Image(
+                        modifier = Modifier.fillMaxSize(),
+                        painter = painterResource(R.drawable.ic_image),
+                        contentDescription = ""
+                    )
+                } else {
+                    GlideImage(
+                        model = albumData.jacketImageUri,
+                        modifier = Modifier.fillMaxSize(),
+                        contentDescription = ""
+                    )
+                }
             }
-        ) {
-            GlideImage(
-                model = uriStr.toUri(),
-                modifier = Modifier.fillMaxSize(),
-                contentDescription = ""
-            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.primaryContainer,
+                            )
+                        )
+                    )
+                    .padding(4.dp)
+            ) {
+                Text(
+                    albumData.albumName,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                albumData.albumArtist?.let { albumArtist ->
+                    Text(albumArtist, fontSize = 16.sp)
+                }
+            }
         }
     }
+}
+
+
+@Preview
+@Composable
+fun AlbumJacketPreview() {
+    AlbumJacket(
+        AlbumHorizontalPagerModel(
+            1L,
+            "albumName",
+            "albumArtist",
+            "android.resource://code.name.monkey.retromusic/drawable/ic_image".toUri()
+        ), pageIndex = 0,
+        pagerState = rememberPagerState(pageCount = { 1 }),
+        onClickAlbum = {}
+    )
 }
