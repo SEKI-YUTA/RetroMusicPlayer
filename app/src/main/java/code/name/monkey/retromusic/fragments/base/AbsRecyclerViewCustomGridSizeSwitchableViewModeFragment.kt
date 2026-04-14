@@ -179,20 +179,6 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
     }
 }
 
-
-@Preview
-@Composable
-fun SamplePreview() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(400.dp)
-            .background(Color.Red)
-    ) {
-        Text("Hello from Compose", fontSize = 30.sp)
-    }
-}
-
 @Composable
 fun Ios6LikeLazyRow(
     dataSet: List<AlbumHorizontalPagerModel>,
