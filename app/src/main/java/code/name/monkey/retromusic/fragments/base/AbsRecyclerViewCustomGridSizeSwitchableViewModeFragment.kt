@@ -108,7 +108,7 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
             )
             setContent {
                 val jacketUriList =
-                    produceState(initialValue = emptyList<AlbumHorizontalPagerModel>()) {
+                    produceState(initialValue = emptyList()) {
                         libraryViewModel.getAlbums().value?.let { albums ->
                             val albumJacketUriList = albums.map { album ->
                                 AlbumHorizontalPagerModel(
