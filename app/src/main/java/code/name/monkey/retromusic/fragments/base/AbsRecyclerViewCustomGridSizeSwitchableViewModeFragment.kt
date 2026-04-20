@@ -39,6 +39,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -248,6 +250,10 @@ fun Ios6LikeLazyRow(
     modifier: Modifier = Modifier,
     onClickAlbumCard: (albumId: Long) -> Unit
 ) {
+    val fling = PagerDefaults.flingBehavior(
+        state = pagerState,
+        pagerSnapDistance = PagerSnapDistance.atMost(10),
+    )
 
     // 1. 親の幅を取得するために BoxWithConstraints を使用
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
@@ -262,6 +268,7 @@ fun Ios6LikeLazyRow(
             state = pagerState,
             pageSize = PageSize.Fixed(itemWidth),
             contentPadding = PaddingValues(horizontal = horizontalPadding), // ここが肝！
+            flingBehavior = fling,
             beyondViewportPageCount = 2, // 左右のアイテムが消えないように多めに描画
             modifier = Modifier.fillMaxWidth()
         ) { page ->
