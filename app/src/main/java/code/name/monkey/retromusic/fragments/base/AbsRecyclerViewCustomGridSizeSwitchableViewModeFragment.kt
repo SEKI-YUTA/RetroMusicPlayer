@@ -77,6 +77,7 @@ import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.extensions.findNavController
 import code.name.monkey.retromusic.model.AlbumHorizontalPagerModel
 import code.name.monkey.retromusic.util.MusicUtil
+import code.name.monkey.retromusic.util.PreferenceUtil
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import kotlin.math.absoluteValue
@@ -84,8 +85,6 @@ import kotlin.math.absoluteValue
 abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : RecyclerView.Adapter<*>, LM : RecyclerView.LayoutManager> :
     AbsRecyclerViewCustomGridSizeFragment<A, LM>() {
     private var isOldAlbumView = false
-    private val IS_OLD_ALBUM_VIEW_KEY =
-        "AbdRecyclerViewCustomGridSizeSwitchableViewModeFragment_isOldAlbumView"
     private var oldAlbumView: View? = null
 
     override fun onCreateView(
@@ -93,7 +92,7 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        isOldAlbumView = savedInstanceState?.getBoolean(IS_OLD_ALBUM_VIEW_KEY) ?: false
+        isOldAlbumView = PreferenceUtil.isOldAppleAlbumViewEnabled
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
@@ -148,11 +147,11 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
     }
 
     private fun getRecyclerViewVisibility(): Int {
-        return if (isOldAlbumView) View.GONE else View.VISIBLE
+        return if (PreferenceUtil.isOldAppleAlbumViewEnabled) View.GONE else View.VISIBLE
     }
 
     private fun getOldAlbumViewVisibility(): Int {
-        return if (isOldAlbumView) View.VISIBLE else View.GONE
+        return if (PreferenceUtil.isOldAppleAlbumViewEnabled) View.VISIBLE else View.GONE
     }
 
     private fun updateViewVisibility() {
@@ -162,9 +161,6 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.apply {
-            putBoolean(IS_OLD_ALBUM_VIEW_KEY, isOldAlbumView)
-        }
     }
 
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
@@ -175,7 +171,7 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 
     override fun onMenuItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_toggle_album_view_mode) {
-            isOldAlbumView = true
+            PreferenceUtil.isOldAppleAlbumViewEnabled = !PreferenceUtil.isOldAppleAlbumViewEnabled
             updateViewVisibility()
             return true
         }
@@ -189,7 +185,6 @@ fun Ios6LikeLazyRow(
     modifier: Modifier = Modifier,
     onClickAlbumCard: (albumId: Long) -> Unit
 ) {
-    val listData = remember { List(10) { "Item No.$it" } }
     val pagerState = rememberPagerState(pageCount = { dataSet.size })
 
     // 1. 親の幅を取得するために BoxWithConstraints を使用
