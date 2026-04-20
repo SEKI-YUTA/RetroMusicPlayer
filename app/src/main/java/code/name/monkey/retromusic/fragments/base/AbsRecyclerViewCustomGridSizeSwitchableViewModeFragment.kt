@@ -227,7 +227,7 @@ fun SongCard(
         Box(
             modifier = Modifier.padding(8.dp)
         ) {
-            Text(title, fontSize = 18.sp)
+            Text(title, fontSize = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
