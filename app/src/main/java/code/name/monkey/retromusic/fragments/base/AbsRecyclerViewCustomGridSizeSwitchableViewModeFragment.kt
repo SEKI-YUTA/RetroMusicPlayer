@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,6 +55,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -78,6 +80,7 @@ import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.helper.MusicPlayerRemote
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.AlbumHorizontalPagerModel
+import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -134,7 +137,8 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                     var currentShowingAlbum by remember {
                         mutableStateOf<Album?>(null)
                     }
-                    LaunchedEffect(pagerState.settledPage) {
+                    LaunchedEffect(pagerState.settledPage, jacketUriList.value.size) {
+                        if(jacketUriList.value.isEmpty()) return@LaunchedEffect
                         currentShowingAlbum = libraryViewModel.albumById(
                             jacketUriList.value[pagerState.currentPage].albumId
                         )
@@ -144,7 +148,7 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                         pagerState = pagerState,
                         dataSet = jacketUriList.value,
                         onClickAlbumCard = { albumId ->
-                            val extras = if (oldAlbumView != null) FragmentNavigatorExtras(
+                            if (oldAlbumView != null) FragmentNavigatorExtras(
                                 oldAlbumView!! to albumId.toString()
                             ) else null
                             findNavController().navigate(
@@ -182,10 +186,6 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
         _binding?.oldAlbumView?.visibility = getOldAlbumViewVisibility()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-    }
-
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateMenu(menu, inflater)
         menu.findItem(R.id.action_toggle_album_view_mode)
@@ -206,15 +206,38 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 fun SongsList(
     album: Album?
 ) {
-    LazyColumn(modifier = Modifier.background(Color.White).padding(horizontal = 8.dp)) {
+    LazyColumn(modifier = Modifier
+        .background(Color.White)
+        .padding(horizontal = 8.dp)) {
         album?.let { album ->
             itemsIndexed(album.songs) { index, song ->
                 SongCard(
                     onClick = {
                         MusicPlayerRemote.openQueue(album.songs, index, true)
                     },
-                    title = song.title,
+                    song = song
                 )
+            }
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "total: ${
+                            MusicUtil.getReadableDurationString(
+                                MusicUtil.getTotalDuration(
+                                    album.songs
+                                )
+                            )
+                        }"
+                    )
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(200.dp))
             }
         }
     }
@@ -223,28 +246,37 @@ fun SongsList(
 @Composable
 fun SongCard(
     onClick: () -> Unit,
-    title: String,
+    song: Song,
     modifier: Modifier = Modifier
 ) {
-    Card (
+    Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth()) {
-        Box(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
             modifier = Modifier.padding(8.dp)
         ) {
-            Text(title, fontSize = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                modifier = Modifier.weight(1f),
+                text = song.title,
+                fontSize = 18.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(MusicUtil.getReadableDurationString(MusicUtil.getTotalDuration(listOf(song))))
         }
     }
 }
 
-@Preview
-@Composable
-fun SongCardPreview() {
-    SongCard(
-        onClick = {},
-        title = "Title",
-    )
-}
+//@Preview
+//@Composable
+//fun SongCardPreview() {
+//    SongCard(
+//        onClick = {},
+//        title = "Title",
+//    )
+//}
 
 @Composable
 fun Ios6LikeLazyRow(
