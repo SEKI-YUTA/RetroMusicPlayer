@@ -14,8 +14,6 @@
  */
 package code.name.monkey.retromusic.fragments.base
 
-import android.R.attr.fragment
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -26,7 +24,6 @@ import android.view.ViewGroup
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -39,16 +36,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,9 +51,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -76,14 +68,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.FragmentNavigatorExtras
-import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import code.name.monkey.retromusic.EXTRA_ALBUM_ID
 import code.name.monkey.retromusic.R
-import code.name.monkey.retromusic.extensions.findNavController
 import code.name.monkey.retromusic.helper.MusicPlayerRemote
 import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.AlbumHorizontalPagerModel
@@ -91,9 +80,7 @@ import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.Placeholder
 import com.bumptech.glide.integration.compose.placeholder
-import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
 
 abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : RecyclerView.Adapter<*>, LM : RecyclerView.LayoutManager> :
@@ -142,19 +129,13 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                     }
                 Column {
                     val pagerState = rememberPagerState(pageCount = { jacketUriList.value.size })
-                    var shouldShowSongsList by remember {
-                        mutableStateOf(false)
-                    }
                     var currentShowingAlbum by remember {
                         mutableStateOf<Album?>(null)
                     }
                     LaunchedEffect(pagerState.settledPage) {
-                        shouldShowSongsList = false
                         currentShowingAlbum = libraryViewModel.albumById(
                             jacketUriList.value[pagerState.currentPage].albumId
                         )
-                        delay(250)
-                        shouldShowSongsList = true
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Ios6LikeLazyRow(
@@ -174,11 +155,8 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Crossfade(shouldShowSongsList) {
-                        when(it) {
-                            true -> SongsList(currentShowingAlbum)
-                            false -> Unit
-                        }
+                    Crossfade(currentShowingAlbum) { album ->
+                        SongsList(album)
                     }
                 }
 
