@@ -201,7 +201,7 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 fun SongsList(
     album: Album?
 ) {
-    LazyColumn(modifier = Modifier.background(Color.White)) {
+    LazyColumn(modifier = Modifier.background(Color.White).padding(horizontal = 8.dp)) {
         album?.let { album ->
             itemsIndexed(album.songs) { index, song ->
                 SongCard(
