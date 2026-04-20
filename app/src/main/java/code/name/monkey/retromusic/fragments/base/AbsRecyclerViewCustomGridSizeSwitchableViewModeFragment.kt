@@ -17,7 +17,6 @@ package code.name.monkey.retromusic.fragments.base
 import android.R.attr.fragment
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -48,7 +47,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -112,8 +110,8 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
             setContent {
                 val jacketUriList =
                     produceState(initialValue = emptyList()) {
-                        libraryViewModel.getAlbums().value?.let { albums ->
-                            val albumJacketUriList = albums.map { album ->
+                        libraryViewModel.getAlbums().observe(viewLifecycleOwner) { albums ->
+                            value = albums.map { album ->
                                 AlbumHorizontalPagerModel(
                                     albumId = album.id,
                                     albumName = album.title,
@@ -123,12 +121,8 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                                     )
                                 )
                             }
-                            value = albumJacketUriList
                         }
                     }
-                LaunchedEffect(Unit) {
-                    Log.d("AlbumJacket", "LaunchedEffect")
-                }
                 Column {
                     Spacer(modifier = Modifier.height(16.dp))
                     Ios6LikeLazyRow(
