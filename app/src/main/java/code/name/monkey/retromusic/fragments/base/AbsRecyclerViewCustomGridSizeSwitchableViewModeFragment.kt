@@ -157,7 +157,10 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Crossfade(currentShowingAlbum) { album ->
+                    Crossfade(
+                        targetState = currentShowingAlbum,
+                        modifier = Modifier.weight(1f)
+                    ) { album ->
                         SongsList(album)
                     }
                 }
