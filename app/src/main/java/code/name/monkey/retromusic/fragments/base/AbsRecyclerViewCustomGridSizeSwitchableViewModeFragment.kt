@@ -48,6 +48,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -80,6 +81,8 @@ import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.integration.compose.Placeholder
+import com.bumptech.glide.integration.compose.placeholder
 import kotlin.math.absoluteValue
 
 abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : RecyclerView.Adapter<*>, LM : RecyclerView.LayoutManager> :
@@ -123,6 +126,9 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                             value = albumJacketUriList
                         }
                     }
+                LaunchedEffect(Unit) {
+                    Log.d("AlbumJacket", "LaunchedEffect")
+                }
                 Column {
                     Spacer(modifier = Modifier.height(16.dp))
                     Ios6LikeLazyRow(
@@ -275,7 +281,9 @@ fun AlbumJacket(
                     GlideImage(
                         model = albumData.jacketImageUri,
                         modifier = Modifier.fillMaxSize(),
-                        contentDescription = ""
+                        contentDescription = "",
+                        loading = placeholder(R.drawable.default_album_art),
+                        failure = placeholder(R.drawable.default_album_art)
                     )
                 }
             }
