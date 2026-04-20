@@ -30,12 +30,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
@@ -47,6 +50,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,6 +67,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -117,58 +122,66 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                 )
             )
             setContent {
-                val jacketUriList =
-                    produceState(initialValue = emptyList()) {
-                        libraryViewModel.getAlbums().observe(viewLifecycleOwner) { albums ->
-                            value = albums.map { album ->
-                                AlbumHorizontalPagerModel(
-                                    albumId = album.id,
-                                    albumName = album.title,
-                                    albumArtist = album.albumArtist,
-                                    jacketImageUri = MusicUtil.getMediaStoreAlbumCoverUri(
-                                        album.id
+                Scaffold {
+                    val jacketUriList =
+                        produceState(initialValue = emptyList()) {
+                            libraryViewModel.getAlbums().observe(viewLifecycleOwner) { albums ->
+                                value = albums.map { album ->
+                                    AlbumHorizontalPagerModel(
+                                        albumId = album.id,
+                                        albumName = album.title,
+                                        albumArtist = album.albumArtist,
+                                        jacketImageUri = MusicUtil.getMediaStoreAlbumCoverUri(
+                                            album.id
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
-                    }
-                Column {
-                    val pagerState = rememberPagerState(pageCount = { jacketUriList.value.size })
-                    var currentShowingAlbum by remember {
-                        mutableStateOf<Album?>(null)
-                    }
-                    LaunchedEffect(pagerState.settledPage, jacketUriList.value.size) {
-                        if(jacketUriList.value.isEmpty()) return@LaunchedEffect
-                        currentShowingAlbum = libraryViewModel.albumById(
-                            jacketUriList.value[pagerState.currentPage].albumId
+                    Column(
+                        modifier = Modifier.padding(
+                            bottom = (it.calculateTopPadding().value + it.calculateBottomPadding().value + dimensionResource(
+                                R.dimen.bottom_nav_mini_player_height
+                            ).value).dp
                         )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Ios6LikeLazyRow(
-                        pagerState = pagerState,
-                        dataSet = jacketUriList.value,
-                        onClickAlbumCard = { albumId ->
-                            if (oldAlbumView != null) FragmentNavigatorExtras(
-                                oldAlbumView!! to albumId.toString()
-                            ) else null
-                            findNavController().navigate(
-                                R.id.albumDetailsFragment,
-                                bundleOf(EXTRA_ALBUM_ID to albumId),
-                                null,
-                            )
-
+                    ) {
+                        val pagerState =
+                            rememberPagerState(pageCount = { jacketUriList.value.size })
+                        var currentShowingAlbum by remember {
+                            mutableStateOf<Album?>(null)
                         }
+                        LaunchedEffect(pagerState.settledPage, jacketUriList.value.size) {
+                            if (jacketUriList.value.isEmpty()) return@LaunchedEffect
+                            currentShowingAlbum = libraryViewModel.albumById(
+                                jacketUriList.value[pagerState.currentPage].albumId
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Ios6LikeLazyRow(
+                            pagerState = pagerState,
+                            dataSet = jacketUriList.value,
+                            onClickAlbumCard = { albumId ->
+                                if (oldAlbumView != null) FragmentNavigatorExtras(
+                                    oldAlbumView!! to albumId.toString()
+                                ) else null
+                                findNavController().navigate(
+                                    R.id.albumDetailsFragment,
+                                    bundleOf(EXTRA_ALBUM_ID to albumId),
+                                    null,
+                                )
 
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Crossfade(
-                        targetState = currentShowingAlbum,
-                        modifier = Modifier.weight(1f)
-                    ) { album ->
-                        SongsList(album)
+                            }
+
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Crossfade(
+                            targetState = currentShowingAlbum,
+                            modifier = Modifier.weight(1f)
+                        ) { album ->
+                            SongsList(album)
+                        }
                     }
                 }
-
             }
         }
     }
@@ -206,9 +219,12 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 fun SongsList(
     album: Album?
 ) {
-    LazyColumn(modifier = Modifier
-        .background(Color.White)
-        .padding(horizontal = 8.dp)) {
+    LazyColumn(
+        modifier = Modifier
+            .background(Color.White)
+            .padding(horizontal = 8.dp)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+    ) {
         album?.let { album ->
             itemsIndexed(album.songs) { index, song ->
                 SongCard(
@@ -237,7 +253,9 @@ fun SongsList(
                 }
             }
             item {
-                Spacer(modifier = Modifier.height(200.dp))
+                Spacer(
+                    modifier = Modifier.height(20.dp)
+                )
             }
         }
     }
