@@ -23,6 +23,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -37,18 +38,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -81,6 +90,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.Placeholder
 import com.bumptech.glide.integration.compose.placeholder
+import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
 
 abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : RecyclerView.Adapter<*>, LM : RecyclerView.LayoutManager> :
@@ -95,6 +105,10 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
     ): View? {
         isOldAlbumView = PreferenceUtil.isOldAppleAlbumViewEnabled
         return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
+    private val demoSongData = List(10) {
+        "Song No.$it"
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -124,8 +138,18 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                         }
                     }
                 Column {
+                    val pagerState = rememberPagerState(pageCount = { jacketUriList.value.size })
+                    var shouldShowSongsList by remember {
+                        mutableStateOf(false)
+                    }
+                    LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
+                        shouldShowSongsList = false
+                        delay(500)
+                        shouldShowSongsList = true
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     Ios6LikeLazyRow(
+                        pagerState = pagerState,
                         dataSet = jacketUriList.value,
                         onClickAlbumCard = { albumId ->
                             val extras = if (oldAlbumView != null) FragmentNavigatorExtras(
@@ -140,6 +164,13 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                         }
 
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Crossfade(shouldShowSongsList) {
+                        when(it) {
+                            true -> DemoSongsList(demoSongData)
+                            false -> Unit
+                        }
+                    }
                 }
 
             }
@@ -180,15 +211,28 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 }
 
 @Composable
+fun DemoSongsList(
+    songs: List<String>
+) {
+    LazyColumn(modifier = Modifier.background(Color.White)) {
+        items(songs) {
+            Box(modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth().padding(vertical = 8.dp)) {
+                Text(it, fontSize = 18.sp)
+            }
+        }
+    }
+}
+
+@Composable
 fun Ios6LikeLazyRow(
+    pagerState: PagerState,
     dataSet: List<AlbumHorizontalPagerModel>,
     modifier: Modifier = Modifier,
     onClickAlbumCard: (albumId: Long) -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { dataSet.size })
 
     // 1. 親の幅を取得するために BoxWithConstraints を使用
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val screenWidth = maxWidth
         val itemWidth = 220.dp
 
