@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
@@ -83,6 +84,8 @@ import androidx.recyclerview.widget.RecyclerView
 import code.name.monkey.retromusic.EXTRA_ALBUM_ID
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.extensions.findNavController
+import code.name.monkey.retromusic.helper.MusicPlayerRemote
+import code.name.monkey.retromusic.model.Album
 import code.name.monkey.retromusic.model.AlbumHorizontalPagerModel
 import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
@@ -142,9 +145,15 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                     var shouldShowSongsList by remember {
                         mutableStateOf(false)
                     }
-                    LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
+                    var currentShowingAlbum by remember {
+                        mutableStateOf<Album?>(null)
+                    }
+                    LaunchedEffect(pagerState.settledPage) {
                         shouldShowSongsList = false
-                        delay(500)
+                        currentShowingAlbum = libraryViewModel.albumById(
+                            jacketUriList.value[pagerState.currentPage].albumId
+                        )
+                        delay(250)
                         shouldShowSongsList = true
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -167,7 +176,7 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                     Spacer(modifier = Modifier.height(16.dp))
                     Crossfade(shouldShowSongsList) {
                         when(it) {
-                            true -> DemoSongsList(demoSongData)
+                            true -> SongsList(currentShowingAlbum)
                             false -> Unit
                         }
                     }
@@ -211,16 +220,47 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
 }
 
 @Composable
-fun DemoSongsList(
-    songs: List<String>
+fun SongsList(
+    album: Album?
 ) {
     LazyColumn(modifier = Modifier.background(Color.White)) {
-        items(songs) {
-            Box(modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth().padding(vertical = 8.dp)) {
-                Text(it, fontSize = 18.sp)
+        album?.let { album ->
+            itemsIndexed(album.songs) { index, song ->
+                SongCard(
+                    onClick = {
+                        MusicPlayerRemote.openQueue(album.songs, index, true)
+                    },
+                    title = song.title,
+                )
             }
         }
     }
+}
+
+@Composable
+fun SongCard(
+    onClick: () -> Unit,
+    title: String,
+    modifier: Modifier = Modifier
+) {
+    Card (
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(title, fontSize = 18.sp)
+        }
+    }
+}
+
+@Preview
+@Composable
+fun SongCardPreview() {
+    SongCard(
+        onClick = {},
+        title = "Title",
+    )
 }
 
 @Composable
