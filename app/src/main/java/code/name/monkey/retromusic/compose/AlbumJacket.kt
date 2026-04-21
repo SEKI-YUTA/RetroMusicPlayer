@@ -1,4 +1,4 @@
-package code.name.monkey.retromusic.fragments.base
+package code.name.monkey.retromusic.compose
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import code.name.monkey.retromusic.R
-import code.name.monkey.retromusic.compose.PreviewData
 import code.name.monkey.retromusic.model.AlbumHorizontalPagerModel
 import code.name.monkey.retromusic.util.theme.RetroTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi

@@ -14,6 +14,11 @@
  */
 package code.name.monkey.retromusic.fragments.base
 
+import code.name.monkey.retromusic.compose.AlbumJacket
+import code.name.monkey.retromusic.compose.Ios6LikeLazyRow
+import code.name.monkey.retromusic.compose.SongCard
+import code.name.monkey.retromusic.compose.SongsList
+
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
