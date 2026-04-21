@@ -165,6 +165,13 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
             .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
     }
 
+    override fun onPrepareMenu(menu: Menu) {
+        super.onPrepareMenu(menu)
+        menu.findItem(R.id.action_toggle_album_view_mode)?.let {
+            updateToggleViewModeIcon(it, PreferenceUtil.isOldAppleAlbumViewEnabled)
+        }
+    }
+
     private fun updateToggleViewModeIcon(item: MenuItem, isOldAppleAlbumView: Boolean) {
         val icon = if (isOldAppleAlbumView) {
             R.drawable.ic_snap_list
