@@ -88,6 +88,7 @@ import code.name.monkey.retromusic.model.AlbumHorizontalPagerModel
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.util.MusicUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
+import code.name.monkey.retromusic.util.theme.RetroTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
@@ -122,7 +123,8 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                 )
             )
             setContent {
-                Scaffold {
+                RetroTheme {
+                    Scaffold {
                     val jacketUriList =
                         produceState(initialValue = emptyList()) {
                             libraryViewModel.getAlbums().observe(viewLifecycleOwner) { albums ->
@@ -182,6 +184,7 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                         }
                     }
                 }
+                }
             }
         }
     }
@@ -221,7 +224,7 @@ fun SongsList(
 ) {
     LazyColumn(
         modifier = Modifier
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 8.dp)
             .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
