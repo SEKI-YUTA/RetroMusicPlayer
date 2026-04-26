@@ -22,12 +22,14 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +38,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
@@ -119,10 +123,31 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                             Crossfade(
                                 targetState = currentShowingAlbum,
                             ) { album ->
-                                SongsList(album = album, contentPadding = PaddingValues(top = 308.dp))
+                                SongsList(
+                                    album = album,
+                                    contentPadding = PaddingValues(top = 308.dp)
+                                )
                             }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(292.dp)
+                                    .background(Color.Black.copy(alpha = 0.1f))
+                            )
+
                             Ios6LikeLazyRow(
-                                modifier = Modifier.padding(vertical = 16.dp).fillMaxWidth().height(292.dp),
+                                modifier = Modifier
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.background,
+                                                MaterialTheme.colorScheme.background,
+                                                MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
+                                            ),
+                                        ),
+                                    )
+                                    .fillMaxWidth()
+                                    .height(292.dp),
                                 pagerState = pagerState,
                                 dataSet = jacketUriList.value,
                                 onClickAlbumCard = { albumId ->
