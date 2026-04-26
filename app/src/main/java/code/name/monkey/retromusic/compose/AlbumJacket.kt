@@ -1,5 +1,6 @@
 package code.name.monkey.retromusic.compose
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,11 +18,17 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,10 +39,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.model.AlbumHorizontalPagerModel
+import code.name.monkey.retromusic.util.color.MediaNotificationProcessor
 import code.name.monkey.retromusic.util.theme.RetroTheme
+import com.bumptech.glide.Glide
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -47,7 +58,40 @@ fun AlbumJacket(
     onClickAlbum: (albumId: Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val localInspection = LocalInspectionMode.current
+    var jacketBitmap by remember {
+        mutableStateOf<Bitmap?>(null)
+    }
+    val containerColor = remember {
+        mutableStateOf<Color?>(null)
+    }
+
+    LaunchedEffect(albumData.jacketImageUri) {
+        val bitmap = withContext(Dispatchers.IO) {
+            try {
+                Glide.with(context)
+                    .asBitmap()
+                    .load(albumData.jacketImageUri)
+                    .submit()
+                    .get()
+            } catch (e: Exception) {
+                null
+            }
+        }
+        jacketBitmap = bitmap
+    }
+
+    LaunchedEffect(key1 = jacketBitmap) {
+        jacketBitmap?.let { bitmap ->
+            MediaNotificationProcessor(context).getPaletteAsync(
+                {
+                    containerColor.value = Color(it.backgroundColor)
+                }, bitmap
+            )
+        }
+    }
+
     Column(
         modifier = modifier
             .width(200.dp)
@@ -98,7 +142,7 @@ fun AlbumJacket(
                     )
                 } else {
                     GlideImage(
-                        model = albumData.jacketImageUri,
+                        model = jacketBitmap,
                         modifier = Modifier.fillMaxSize(),
                         contentDescription = "",
                         loading = placeholder(R.drawable.default_album_art),
@@ -115,7 +159,7 @@ fun AlbumJacket(
                         Brush.verticalGradient(
                             listOf(
                                 Color.Transparent,
-                                MaterialTheme.colorScheme.primaryContainer,
+                                containerColor.value ?: MaterialTheme.colorScheme.primaryContainer,
                             )
                         )
                     )
