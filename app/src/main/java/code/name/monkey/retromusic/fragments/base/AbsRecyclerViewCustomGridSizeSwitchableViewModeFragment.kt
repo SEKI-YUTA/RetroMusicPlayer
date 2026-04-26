@@ -22,8 +22,9 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.rememberPagerState
@@ -97,7 +98,7 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                                     }
                                 }
                             }
-                        Column(
+                        Box(
                             modifier = Modifier.padding(
                                 bottom = (it.calculateTopPadding().value + it.calculateBottomPadding().value + dimensionResource(
                                     R.dimen.bottom_nav_mini_player_height
@@ -115,8 +116,13 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                                     jacketUriList.value[pagerState.currentPage].albumId
                                 )
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Crossfade(
+                                targetState = currentShowingAlbum,
+                            ) { album ->
+                                SongsList(album = album, contentPadding = PaddingValues(top = 308.dp))
+                            }
                             Ios6LikeLazyRow(
+                                modifier = Modifier.padding(vertical = 16.dp).fillMaxWidth().height(292.dp),
                                 pagerState = pagerState,
                                 dataSet = jacketUriList.value,
                                 onClickAlbumCard = { albumId ->
@@ -132,13 +138,7 @@ abstract class AbsRecyclerViewCustomGridSizeSwitchableViewModeFragment<A : Recyc
                                 }
 
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Crossfade(
-                                targetState = currentShowingAlbum,
-                                modifier = Modifier.weight(1f)
-                            ) { album ->
-                                SongsList(album)
-                            }
+
                         }
                     }
                 }
