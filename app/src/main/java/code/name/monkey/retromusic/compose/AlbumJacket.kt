@@ -52,6 +52,7 @@ import kotlin.math.absoluteValue
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun AlbumJacket(
+    setColorCallback: ((Color) -> Unit)?,
     albumData: AlbumHorizontalPagerModel,
     pageIndex: Int,
     pagerState: PagerState,
@@ -86,7 +87,9 @@ fun AlbumJacket(
         jacketBitmap?.let { bitmap ->
             MediaNotificationProcessor(context).getPaletteAsync(
                 {
-                    containerColor.value = Color(it.backgroundColor)
+                    val pickedJacketColor = Color(it.backgroundColor)
+                    containerColor.value = pickedJacketColor
+                    setColorCallback?.invoke(pickedJacketColor)
                 }, bitmap
             )
         }
@@ -186,6 +189,7 @@ fun AlbumJacket(
 fun AlbumJacketPreview() {
     RetroTheme {
         AlbumJacket(
+            setColorCallback = {},
             albumData = PreviewData.sampleAlbumPagerModel,
             pageIndex = 0,
             pagerState = rememberPagerState(pageCount = { 1 }),
