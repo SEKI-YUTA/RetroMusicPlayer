@@ -158,7 +158,7 @@ fun AlbumJacket(
                     .background(
                         Brush.verticalGradient(
                             listOf(
-                                Color.Transparent,
+                                containerColor.value?.copy(alpha = 0.3f) ?: Color.Transparent,
                                 containerColor.value ?: MaterialTheme.colorScheme.primaryContainer,
                             )
                         )
