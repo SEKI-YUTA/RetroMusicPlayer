@@ -399,6 +399,8 @@ object PreferenceUtil {
             BLUETOOTH_PLAYBACK, false
         )
 
+    val isSpeakerDisabled get() = sharedPreferences.getBoolean("disable_speaker", false)
+
     val isBlurredAlbumArt
         get() = sharedPreferences.getBoolean(
             BLURRED_ALBUM_ART, false
