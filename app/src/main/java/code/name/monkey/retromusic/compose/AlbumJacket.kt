@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
@@ -64,7 +65,7 @@ fun AlbumJacket(
     var jacketBitmap by remember {
         mutableStateOf<Bitmap?>(null)
     }
-    val containerColor = remember {
+    var containerColor by remember {
         mutableStateOf<Color?>(null)
     }
 
@@ -88,7 +89,7 @@ fun AlbumJacket(
             MediaNotificationProcessor(context).getPaletteAsync(
                 {
                     val pickedJacketColor = Color(it.backgroundColor)
-                    containerColor.value = pickedJacketColor
+                    containerColor = pickedJacketColor
                     setColorCallback?.invoke(pickedJacketColor)
                 }, bitmap
             )
@@ -161,8 +162,8 @@ fun AlbumJacket(
                     .background(
                         Brush.verticalGradient(
                             listOf(
-                                containerColor.value?.copy(alpha = 0.3f) ?: Color.Transparent,
-                                containerColor.value ?: MaterialTheme.colorScheme.primaryContainer,
+                                containerColor?.copy(alpha = 0.3f) ?: Color.Transparent,
+                                containerColor ?: MaterialTheme.colorScheme.primaryContainer,
                             )
                         )
                     )
@@ -174,14 +175,26 @@ fun AlbumJacket(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = containerColor?.contrastColor()
+                        ?: MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 albumData.albumArtist?.let { albumArtist ->
-                    Text(albumArtist, fontSize = 16.sp)
+                    Text(
+                        albumArtist, fontSize = 16.sp,
+                        color = containerColor?.contrastColor()
+                            ?: MaterialTheme.colorScheme.onPrimaryContainer
+
+                    )
                 }
             }
         }
     }
+}
+
+fun Color.contrastColor(): Color {
+    // 輝度が 0.5 より大きければ明るい色と判断して黒を、そうでなければ白を返す
+    return if (this.luminance() > 0.5f) Color.Black else Color.White
 }
 
 @Preview
