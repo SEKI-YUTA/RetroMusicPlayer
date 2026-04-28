@@ -55,6 +55,13 @@
             tools:visibility="visible" />
     </LinearLayout>
 
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/old_album_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/shuffle_button"
         style="@style/Widget.Material3.FloatingActionButton.Primary"

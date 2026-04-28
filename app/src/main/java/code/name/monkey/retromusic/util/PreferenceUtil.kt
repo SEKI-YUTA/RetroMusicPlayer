@@ -135,6 +135,8 @@ import java.io.File
 
 
 object PreferenceUtil {
+    private val IS_OLD_ALBUM_VIEW_KEY =
+        "AbdRecyclerViewCustomGridSizeSwitchableViewModeFragment_isOldAlbumView"
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(App.getContext())
 
     val defaultCategories = listOf(
@@ -201,6 +203,13 @@ object PreferenceUtil {
             }
         }
     }
+
+    var isOldAppleAlbumViewEnabled: Boolean
+        get() = sharedPreferences.getBoolean(IS_OLD_ALBUM_VIEW_KEY, false)
+        set(value) = sharedPreferences.edit {
+            putBoolean(IS_OLD_ALBUM_VIEW_KEY, value)
+        }
+
 
     var languageCode: String
         get() = sharedPreferences.getString(LANGUAGE_NAME, "auto") ?: "auto"

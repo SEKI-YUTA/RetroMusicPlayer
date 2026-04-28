@@ -6,10 +6,11 @@ plugins {
     alias(libs.plugins.androidx.navigation.safeargs)
     id("org.jetbrains.kotlin.plugin.parcelize")
     alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
-    compileSdk = 35
+    compileSdk = 36
     namespace = "code.name.monkey.retromusic"
 
     defaultConfig {
@@ -68,6 +69,7 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        compose = true
     }
     packaging {
         resources {
@@ -128,6 +130,16 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.common.java8)
+    implementation(platform("androidx.compose:compose-bom:2026.03.01"))
+    // other dependencies
+    // Compose
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation(libs.androidx.compose.material3)
+    implementation("com.google.accompanist:accompanist-themeadapter-material3:0.36.0")
+
+
+    debugImplementation(libs.androidx.compose.ui.tooling)
+
 
     implementation(libs.androidx.core.splashscreen)
 
@@ -154,6 +166,7 @@ dependencies {
 
     implementation(libs.glide)
     ksp(libs.glide.ksp)
+    implementation(libs.glide.compose)
     implementation(libs.glide.okhttp3.integration)
 
     implementation(libs.advrecyclerview)
